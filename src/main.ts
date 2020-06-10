@@ -9,8 +9,8 @@ let ball = { X: 0, Y: 0, radius: 5, VX: 16, VY: 0 }
 
 window.onload = () => {
     canvas = document.getElementById('game') as HTMLCanvasElement;
-    canvas.width = window.innerWidth - 10;
-    canvas.height = window.innerHeight - 10;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     canvas.onmousemove = updateMousePosition;
 
     playerPaddleY = canvas.height / 2;
