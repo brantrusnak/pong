@@ -19,7 +19,6 @@ window.onload = () => {
     computerPaddleY = ball.Y;
 
     context = canvas.getContext('2d');
-    context.globalAlpha = 5;
 
     draw();
 }
@@ -109,6 +108,7 @@ function move() {
     ball.Y += ball.VY;
     updateComputerPosition();
 
+    // Player score|paddle|ball collision detection.
     if (ball.X - paddleDimensions.width < 0) {
         if (ball.Y >= playerPaddleY && ball.Y < playerPaddleY + paddleDimensions.height) {
             const d = playerPaddleY - ball.Y;
@@ -119,6 +119,8 @@ function move() {
             resetBall();
         }
     }
+
+    // Computer score|paddle|ball collision detection.
     if (ball.X + paddleDimensions.width > canvas.width) {
         if (ball.Y >= computerPaddleY && ball.Y < computerPaddleY + paddleDimensions.height) {
             const d = computerPaddleY - ball.Y;
@@ -130,6 +132,7 @@ function move() {
             resetBall();
         }
     }
+
     // Bounce off top/bottom.
     if (ball.Y < 0) {
         ball.VY = -ball.VY;
