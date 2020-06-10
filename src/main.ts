@@ -27,7 +27,7 @@ window.onload = () => {
     ball.Y = canvas.height / 2;
 
     context = canvas.getContext('2d');
-    context.globalAlpha = 1;
+    context.globalAlpha = 5;
 
     draw();
 }
@@ -49,7 +49,7 @@ function draw() {
     drawPaddle(0, playerPaddleY);
 
     // Computer Paddle
-    drawPaddle(canvas.width - paddleDimensions.width, canvas.height / 2);
+    drawPaddle(canvas.width - paddleDimensions.width, ball.Y);
 
     drawBall();
     drawScore();
@@ -60,24 +60,23 @@ function drawPaddle(X: number, Y: number) {
     context.beginPath();
     context.fillStyle = '#fff';
     context.fillRect(X, Y - (paddleDimensions.height / 2), paddleDimensions.width, paddleDimensions.height);
-    context.stroke();
-    context.closePath();
+    context.fill();
 }
 
 function drawBall() {
     context.beginPath();
-    context.fillStyle = 'red';
-    context.globalAlpha = 0.6
+    context.fillStyle = '#fff';
     context.arc(ball.X, ball.Y, ball.radius, 0, Math.PI * 2, true);
     context.fill();
-    context.closePath();
 }
 
 function drawScore() {
     /*
         Render scoreboard, player score is 25% (of canvas width) offset, second is 75%.
     */
-    context.fillStyle= 'limegreen'
-    context.fillText(playerscore.toString(), canvas.width * 0.25, 300);
-    context.fillText(computerscore.toString(), canvas.width * 0.75, 300);
+    context.fillStyle= '#fff'
+    context.font = "72px 'Press Start 2P'";
+    context.textBaseline = 'top';
+    context.fillText(playerscore.toString(), canvas.width * 0.25, 100);
+    context.fillText(computerscore.toString(), canvas.width * 0.75, 100);
 }
