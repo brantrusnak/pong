@@ -21,10 +21,10 @@
   "homepage": "https://github.com/brantrusnak/pong#readme",
   "dependencies": {
     "nodemon": "^2.0.4",
-    "ts-loader": "^7.0.5",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.9.5",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
     "webpack-node-externals": "^1.7.2"
   }
 }
