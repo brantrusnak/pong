@@ -1,44 +1,72 @@
+const PADDLE = Object.freeze({ width: 10, height: 100 });
+const DIVIDER_PATTERN = [10, 70];
+const SCORE_FONT = "72px 'Press Start 2P'";
+const SCORE_Y_OFFSET = 10;
+const SCORE_OFFSETS = Object.freeze({ player: 0.25, computer: 0.75 });
+const BASE_BALL_SPEED = 16;
+
 let canvas: HTMLCanvasElement;
 let context: CanvasRenderingContext2D;
-let paddleDimensions = { width: 10, height: 100 }
-let playerPaddleY = 0;
+let playerPaddleY = 0; // stores paddle center
 let computerPaddleY = 0;
 let playerscore = 0;
 let computerscore = 0;
-let ball = { X: 0, Y: 0, radius: 5, VX: 16, VY: 0 }
+let ball = { X: 0, Y: 0, radius: 5, VX: BASE_BALL_SPEED, VY: 0 };
 
 window.onload = () => {
     canvas = document.getElementById('game') as HTMLCanvasElement;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.onmousemove = updateMousePosition;
-
-    playerPaddleY = canvas.height / 2;
-    ball.X = canvas.width / 2;
-    ball.Y = canvas.height / 2;
-    computerPaddleY = ball.Y;
-
     context = canvas.getContext('2d');
-
+    resizeCanvas(true);
+    canvas.onmousemove = updateMousePosition;
+    window.addEventListener('resize', () => resizeCanvas());
     draw();
 }
 
+function resizeCanvas(initializing = false) {
+    const previousWidth = canvas?.width || window.innerWidth;
+    const previousHeight = canvas?.height || window.innerHeight;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    if (initializing) {
+        playerPaddleY = canvas.height / 2;
+        computerPaddleY = playerPaddleY;
+        ball.X = canvas.width / 2;
+        ball.Y = canvas.height / 2;
+        return;
+    }
+
+    const widthRatio = canvas.width / previousWidth;
+    const heightRatio = canvas.height / previousHeight;
+
+    playerPaddleY *= heightRatio;
+    computerPaddleY *= heightRatio;
+    ball.X *= widthRatio;
+    ball.Y *= heightRatio;
+
+    clampPositions();
+}
+
+function clampPositions() {
+    const halfHeight = PADDLE.height / 2;
+    playerPaddleY = Math.min(Math.max(playerPaddleY, halfHeight), canvas.height - halfHeight);
+    computerPaddleY = Math.min(Math.max(computerPaddleY, halfHeight), canvas.height - halfHeight);
+    ball.X = Math.min(Math.max(ball.X, ball.radius), canvas.width - ball.radius);
+    ball.Y = Math.min(Math.max(ball.Y, ball.radius), canvas.height - ball.radius);
+}
+
 function updateMousePosition(event: MouseEvent) {
-    /*
-        Check if the player's current mouse position + half the height of the paddle is greater than 0 and smaller than canvas height.
-        Prevents paddle from moving out of screen.
-    */
-    if (event.clientY - (paddleDimensions.height / 2) > 0 && event.clientY + (paddleDimensions.height / 2) < canvas.height) {
-        playerPaddleY = event.clientY - (paddleDimensions.height / 2);
+    const halfHeight = PADDLE.height / 2;
+    if (event.clientY - halfHeight > 0 && event.clientY + halfHeight < canvas.height) {
+        playerPaddleY = event.clientY;
     }
 }
 
 function updateComputerPosition() {
-    /*
-        Repeat player "out of bounds" check here for computer.
-    */
-    if (ball.Y - (paddleDimensions.height / 2) > 0 && ball.Y + (paddleDimensions.height / 2) < canvas.height) {
-        computerPaddleY = ball.Y - (paddleDimensions.height / 2);
+    const halfHeight = PADDLE.height / 2;
+    if (ball.Y - halfHeight > 0 && ball.Y + halfHeight < canvas.height) {
+        computerPaddleY = ball.Y;
     }
 }
 
@@ -50,10 +78,10 @@ function draw() {
     move();
 
     // Player Paddle
-    drawPaddle(0, playerPaddleY + (paddleDimensions.height / 2));
+    drawPaddle(0, playerPaddleY);
 
     // Computer Paddle
-    drawPaddle(canvas.width - paddleDimensions.width, computerPaddleY + (paddleDimensions.height / 2));
+    drawPaddle(canvas.width - PADDLE.width, computerPaddleY);
 
     drawDivider();
     drawBall();
@@ -64,7 +92,7 @@ function draw() {
 function drawPaddle(X: number, Y: number) {
     context.beginPath();
     context.fillStyle = '#fff';
-    context.fillRect(X, Y - (paddleDimensions.height / 2), paddleDimensions.width, paddleDimensions.height);
+    context.fillRect(X, Y - (PADDLE.height / 2), PADDLE.width, PADDLE.height);
     context.fill();
 }
 
@@ -79,7 +107,7 @@ function drawDivider() {
     context.beginPath();
     context.strokeStyle = '#fff';
     context.lineWidth = 10;
-    context.setLineDash([10, 70]);
+    context.setLineDash(DIVIDER_PATTERN);
     context.moveTo(canvas.width / 2, 0);
     context.lineTo(canvas.width / 2, canvas.height);
     context.stroke();
@@ -90,15 +118,16 @@ function drawScore() {
         Render scoreboard, player score is 25% (of canvas width) offset, second is 75%.
     */
     context.fillStyle = '#fff'
-    context.font = "72px 'Press Start 2P'";
+    context.font = SCORE_FONT;
     context.textBaseline = 'top';
-    context.fillText(playerscore.toString(), canvas.width * 0.25, 10);
-    context.fillText(computerscore.toString(), canvas.width * 0.75, 10);
+    context.fillText(playerscore.toString(), canvas.width * SCORE_OFFSETS.player, SCORE_Y_OFFSET);
+    context.fillText(computerscore.toString(), canvas.width * SCORE_OFFSETS.computer, SCORE_Y_OFFSET);
 }
 
 function resetBall() {
-    ball.VX = 16;
-    ball.VY = 0;
+    const horizontalDirection = Math.random() < 0.5 ? -1 : 1;
+    ball.VX = BASE_BALL_SPEED * horizontalDirection;
+    ball.VY = (Math.random() - 0.5) * (BASE_BALL_SPEED * 0.5);
     ball.X = canvas.width / 2;
     ball.Y = canvas.height / 2;
 }
@@ -109,8 +138,10 @@ function move() {
     updateComputerPosition();
 
     // Player score|paddle|ball collision detection.
-    if (ball.X - paddleDimensions.width < 0) {
-        if (ball.Y >= playerPaddleY && ball.Y < playerPaddleY + paddleDimensions.height) {
+    if (ball.X - PADDLE.width < 0) {
+        const playerTop = playerPaddleY - (PADDLE.height / 2);
+        const playerBottom = playerPaddleY + (PADDLE.height / 2);
+        if (ball.Y >= playerTop && ball.Y < playerBottom) {
             const d = playerPaddleY - ball.Y;
             ball.VY += d * -0.1;
             ball.VX = -ball.VX;
@@ -121,8 +152,10 @@ function move() {
     }
 
     // Computer score|paddle|ball collision detection.
-    if (ball.X + paddleDimensions.width > canvas.width) {
-        if (ball.Y >= computerPaddleY && ball.Y < computerPaddleY + paddleDimensions.height) {
+    if (ball.X + PADDLE.width > canvas.width) {
+        const computerTop = computerPaddleY - (PADDLE.height / 2);
+        const computerBottom = computerPaddleY + (PADDLE.height / 2);
+        if (ball.Y >= computerTop && ball.Y < computerBottom) {
             const d = computerPaddleY - ball.Y;
             ball.VY += d * -0.1;
             ball.VX = -ball.VX;
@@ -134,10 +167,12 @@ function move() {
     }
 
     // Bounce off top/bottom.
-    if (ball.Y < 0) {
+    if (ball.Y - ball.radius < 0) {
+        ball.Y = ball.radius;
         ball.VY = -ball.VY;
     }
-    if (ball.Y > canvas.height) {
+    if (ball.Y + ball.radius > canvas.height) {
+        ball.Y = canvas.height - ball.radius;
         ball.VY = -ball.VY;
     }
 }
