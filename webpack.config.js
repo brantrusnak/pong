@@ -1,4 +1,3 @@
-const nodeExternals = require('webpack-node-externals');
 const path = require('path');
 
 module.exports = {
@@ -8,14 +7,20 @@ module.exports = {
     },
     devtool: 'inline-source-map',
     output: {
-        path: path.resolve(__dirname, 'build/js/')
+        path: path.resolve(__dirname, 'build/js/'),
+        filename: '[name].js',
+        clean: true
     },
     resolve: {
-        extensions: ['.ts']
+        extensions: ['.ts', '.tsx', '.js']
     },
     module: {
         rules: [
-            { test: /\.tsx?$/, loader: "ts-loader" }
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            }
         ]
     },
     mode: 'development',
