@@ -11,15 +11,25 @@ let playerPaddleY = 0; // stores paddle center
 let computerPaddleY = 0;
 let playerscore = 0;
 let computerscore = 0;
-let ball = { X: 0, Y: 0, radius: 5, VX: BASE_BALL_SPEED, VY: 0 };
+let ball = { X: 0, Y: 0, radius: 5, VX: 0, VY: 0 };
+let gameStarted = false;
+let ellipsisFrame = 0;
 
 window.onload = () => {
     canvas = document.getElementById('game') as HTMLCanvasElement;
     context = canvas.getContext('2d');
     resizeCanvas(true);
     canvas.onmousemove = updateMousePosition;
+    canvas.onclick = startGame;
     window.addEventListener('resize', () => resizeCanvas());
     draw();
+}
+
+function startGame() {
+    if (!gameStarted) {
+        gameStarted = true;
+        resetBall();
+    }
 }
 
 function resizeCanvas(initializing = false) {
@@ -74,9 +84,6 @@ function draw() {
     // Clear context every draw call.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Update all movement before drawing.
-    move();
-
     // Player Paddle
     drawPaddle(0, playerPaddleY);
 
@@ -86,6 +93,14 @@ function draw() {
     drawDivider();
     drawBall();
     drawScore();
+
+    if (!gameStarted) {
+        drawStartScreen();
+    } else {
+        // Update all movement before drawing.
+        move();
+    }
+
     requestAnimationFrame(draw);
 }
 
@@ -122,6 +137,34 @@ function drawScore() {
     context.textBaseline = 'top';
     context.fillText(playerscore.toString(), canvas.width * SCORE_OFFSETS.player, SCORE_Y_OFFSET);
     context.fillText(computerscore.toString(), canvas.width * SCORE_OFFSETS.computer, SCORE_Y_OFFSET);
+}
+
+function drawStartScreen() {
+    ellipsisFrame++;
+    // Cycle ellipsis every 30 frames (roughly 0.5 seconds at 60fps)
+    const ellipsisCount = Math.floor((ellipsisFrame / 30) % 3) + 1;
+    const ellipsis = '.'.repeat(ellipsisCount);
+    
+    context.fillStyle = '#fff';
+    context.font = SCORE_FONT;
+    context.textBaseline = 'middle';
+    
+    // Measure text to keep "Click to Start" in fixed position
+    const baseText = 'Click to Start';
+    const maxEllipsis = '...';
+    context.textAlign = 'left';
+    const baseTextWidth = context.measureText(baseText).width;
+    const maxEllipsisWidth = context.measureText(maxEllipsis).width;
+    const totalWidth = baseTextWidth + maxEllipsisWidth;
+    
+    // Draw base text centered, accounting for max ellipsis width
+    const startX = (canvas.width / 2) - (totalWidth / 2);
+    context.fillText(baseText, startX, canvas.height / 2);
+    
+    // Draw ellipsis in fixed-width area after base text
+    context.fillText(ellipsis, startX + baseTextWidth, canvas.height / 2);
+    
+    context.textAlign = 'left'; // Reset to default
 }
 
 function resetBall() {
