@@ -3,7 +3,6 @@ const path = require('path');
 module.exports = {
     entry: {
         main: './src/main.ts',
-        extra: './src/extra.ts',
     },
     devtool: 'inline-source-map',
     output: {
